@@ -1,5 +1,13 @@
 "use client";
-import { motion, useScroll } from "framer-motion";
+import { useRef, useEffect } from "react";
+import {
+  motion,
+  useScroll,
+  useInView,
+  useAnimate,
+  useAnimation,
+  useTransform,
+} from "framer-motion";
 
 const gridContainerVariants = {
   hidden: { opacity: 0 },
@@ -28,6 +36,32 @@ const svgIconVariants = {
 };
 export default function Home() {
   const { scrollYProgress: completionProgress } = useScroll();
+  const containerRef = useRef(null);
+  const isInView = useInView(containerRef, { once: true });
+  const mainControls = useAnimation();
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end end"],
+  });
+
+  const paragraphOneValue = useTransform(
+    scrollYProgress,
+    [0, 1],
+    ["-100%", "0%"]
+  );
+
+  const paragraphTwoValue = useTransform(
+    scrollYProgress,
+    [0, 1],
+    ["100%", "0%"]
+  );
+
+  useEffect(() => {
+    if (isInView) {
+      mainControls.start("show");
+    }
+  }, [isInView]);
+
   return (
     <main className="flex flex-col gap-10 overflow-x-hidden">
       <motion.section
@@ -153,6 +187,38 @@ export default function Home() {
           </motion.svg>
         </motion.div>
       </motion.section>
+      <section className="flex flex-col gap-10 mb-10" ref={containerRef}>
+        <motion.h1
+          className="text-5xl tracking-wide text-slate-100 text-center"
+          animate={{ mainControls }}
+          initial="hidden"
+          variants={{
+            hidden: { opacity: 0, y: 75 },
+            show: { opacity: 1, y: 0 },
+          }}
+          transition={{ delay: 0.3 }}
+        >
+          Just Keep Scrolling
+        </motion.h1>
+        <motion.p
+          style={{ translateX: paragraphOneValue }}
+          className="mx-auto w-1/2 text-4xl font-thin text-slate-100"
+        >
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Repellendus,
+          fugit. Lorem ipsum dolor sit amet consectetur adipisicing elit.
+          Repellendus, fugit. Lorem ipsum dolor sit amet consectetur adipisicing
+          elit. Repellendus, fugit.
+        </motion.p>
+        <motion.p
+          style={{ translateX: paragraphTwoValue }}
+          className="mx-auto w-1/2 text-4xl font-thin text-slate-100"
+        >
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Repellendus,
+          fugit. Lorem ipsum dolor sit amet consectetur adipisicing elit.
+          Repellendus, fugit. Lorem ipsum dolor sit amet consectetur adipisicing
+          elit. Repellendus, fugit.
+        </motion.p>
+      </section>
     </main>
   );
 }
